@@ -14,29 +14,6 @@
 
 import random # this will be a useful library for shuffling
 
-
-def hand_rank(hand):
-    "Return a value indicating the ranking of a hand."
-    ranks = card_ranks(hand)
-    if straight(ranks) and flush(hand):
-        return (8, max(ranks))
-    elif kind(4, ranks):
-        return (7, kind(4, ranks), kind(1, ranks))
-    elif kind(3, ranks) and kind(2, ranks):
-        return (6, kind(3, ranks), kind(2, ranks))
-    elif flush(hand):
-        return (5, ranks)
-    elif straight(ranks):
-        return (4, max(ranks))
-    elif kind(3, ranks):
-        return (3, kind(3, ranks), ranks)
-    elif two_pair(ranks):
-        return (2, two_pair(ranks), ranks)
-    elif kind(2, ranks):
-        return (1, kind(2, ranks), ranks)
-    else:
-        return (0, ranks)
-
 def straight(ranks):
     "Return True if the ordered ranks form a 5-card straight."
     ''' My answer
@@ -111,6 +88,7 @@ def two_pair(ranks):
 
 def hand_rank(hand):
     "Return a value indicating the ranking of a hand."
+    '''
     ranks = card_ranks(hand)
     if straight(ranks) and flush(hand):
         return (8, max(ranks))
@@ -130,6 +108,23 @@ def hand_rank(hand):
         return (1, kind(2, ranks), ranks)
     else:
         return (0, ranks)
+    '''
+    ''' Refactor 1 '''
+    group = group(['--23456789TJQKA'.index(str(r)) for r in hand])
+    counts, ranks = uzip(group)
+    if ranks == (14, 5, 4, 3, 2):
+        return (5, 4, 3, 2, 1)
+    straight = len(ranks) == 5 and max(ranks)-min(ranks) == 4
+    flush = len(set(s for s,r in hand)) == 1
+    return max(count_ranking[counts], 4*straight() + 5*flush()), ranks
+
+count_ranking = {(5, ):10, (1, 4):7, (3, 2):6, (3, 1, 1):3, (2, 2, 1): 2, (2, 1, 1, 1):1, (1, 1, 1, 1, 1):0}
+
+
+
+def group(items):
+
+
 
 def poker(hands):
     "Return a list of winning hands: poker([hand,...]) => [hand,...]"
@@ -143,24 +138,29 @@ def allmax(iterable, key=None):
     print max_rank
     return [item for item in iterable if card_ranks(item) == max_rank]
 
-# This builds a deck of 52 cards. If you are unfamiliar
-# with this notation, check out Andy's supplemental video
-# on list comprehensions (you can find the link in the
-# Instructor Comments box below).
 
-mydeck = [r+s for r in '23456789TJQKA' for s in 'SHDC']
-
-def deal(numhands, n=5, deck=mydeck):
+def deal(numhands, n=5, deck=[r+s for r in '23456789TJQKA' for s in 'SHDC']):
     # Your code here.
     if numhands*n > len(deck):
         return None
     random.shuffle(deck)
-    hands_result = [[deck.pop() for i in range(n)] for j in range(numhands)]
+    hands_result = [deck[i*n: (i+1)*n] for i in range(numhands)]
     return hands_result
 
+hand_names = ["Straight Flush", "4 Kind", "Full house", "Flush", "Straight", "3 kind", "2 pairs", "1 pair", "High card"]
 
-print deal(5, 5)
+def hand_percentages(n = 700*1000):
+    counts= [0] * 9
+    for i in range(n/10):
+        for hand in deal(10):
+            rank = hand_rank(hand)[0]
+            counts[rank] += 1
+    for i in reversed(range(9)):
+        print "%14s: %6.3f %%" % (hand_names[i], 100*counts[i]/n)
 
+
+
+hand_percentages()
 
 # def test():
 #     "Test cases for the functions in poker program."
