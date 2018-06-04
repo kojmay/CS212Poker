@@ -12,6 +12,31 @@
 # Keep in mind that ranks will be ordered from largest
 # to smallest.
 
+import random # this will be a useful library for shuffling
+
+
+def hand_rank(hand):
+    "Return a value indicating the ranking of a hand."
+    ranks = card_ranks(hand)
+    if straight(ranks) and flush(hand):
+        return (8, max(ranks))
+    elif kind(4, ranks):
+        return (7, kind(4, ranks), kind(1, ranks))
+    elif kind(3, ranks) and kind(2, ranks):
+        return (6, kind(3, ranks), kind(2, ranks))
+    elif flush(hand):
+        return (5, ranks)
+    elif straight(ranks):
+        return (4, max(ranks))
+    elif kind(3, ranks):
+        return (3, kind(3, ranks), ranks)
+    elif two_pair(ranks):
+        return (2, two_pair(ranks), ranks)
+    elif kind(2, ranks):
+        return (1, kind(2, ranks), ranks)
+    else:
+        return (0, ranks)
+
 def straight(ranks):
     "Return True if the ordered ranks form a 5-card straight."
     ''' My answer
@@ -118,31 +143,32 @@ def allmax(iterable, key=None):
     print max_rank
     return [item for item in iterable if card_ranks(item) == max_rank]
 
-def test():
-    "Test cases for the functions in poker program."
-    sf = "6C 7C 8C 9C TC".split()
-    fk = "9D 9H 9S 9C 7D".split()
-    fh = "TD TC TH 7C 7D".split()
-    tp = "5S 5D 9H 9C 6S".split()  # Two pairs
-    # assert straight([9, 8, 7, 6, 5]) == True
-    # assert straight([9, 8, 8, 6, 5]) == False
-    # assert flush(sf) == True
-    # assert flush(fk) == False
-    # assert card_ranks(sf) == [10, 9, 8, 7, 6]
-    # fkranks = card_ranks(fk)
-    # tpranks = card_ranks(tp)
-    # assert kind(4, fkranks) == 9
-    # assert kind(3, fkranks) == None
-    # assert kind(2, fkranks) == None
-    # assert kind(1, fkranks) == 7
-    # assert two_pair(tpranks) == (9, 5)
-    # assert two_pair([9, 9, 8, 5, 2]) == None
-    sf1 = "6C 7C 8C 9C TC".split()  # Straight Flush
-    sf2 = "6D 7D 8D 9D TD".split()  # Straight Flush
-    fk = "9D 9H 9S 9C 7D".split()  # Four of a Kind
-    fh = "TD TC TH 7C 7D".split()  # Full House
-    assert poker([sf1, sf2, fk, fh]) == [sf1, sf2]
-    return 'tests pass'
+# This builds a deck of 52 cards. If you are unfamiliar
+# with this notation, check out Andy's supplemental video
+# on list comprehensions (you can find the link in the
+# Instructor Comments box below).
+
+mydeck = [r+s for r in '23456789TJQKA' for s in 'SHDC']
+
+def deal(numhands, n=5, deck=mydeck):
+    # Your code here.
+    if numhands*n > len(deck):
+        return None
+    random.shuffle(deck)
+    hands_result = [[deck.pop() for i in range(n)] for j in range(numhands)]
+    return hands_result
 
 
-print test()
+print deal(5, 5)
+
+
+# def test():
+#     "Test cases for the functions in poker program."
+#     sf1 = "6C 7C 8C 9C TC".split() # Straight Flush
+#     sf2 = "6D 7D 8D 9D TD".split() # Straight Flush
+#     fk = "9D 9H 9S 9C 7D".split() # Four of a Kind
+#     fh = "TD TC TH 7C 7D".split() # Full House
+#     assert poker([sf1, sf2, fk, fh]) == [sf1, sf2]
+#     return 'tests pass'
+#
+# print test()
