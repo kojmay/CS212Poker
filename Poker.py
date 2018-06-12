@@ -38,7 +38,9 @@ def flush(hand):
 
 def card_ranks(cards):
     "Return a list of the ranks, sorted with higher first."
-    ranks = ['--23456789TJQKA'.index(str(r)) for r,s in cards]
+    # print 'card_ranks: ', cards
+    # print "cards:", cards
+    ranks = ['--23456789TJQKA'.index(r) for r,s in cards]
     ranks.sort(reverse=True)
     return [5, 4, 3, 2, 1] if (ranks == [14, 5, 4, 3, 2]) else ranks
 
@@ -88,7 +90,6 @@ def two_pair(ranks):
 
 def hand_rank(hand):
     "Return a value indicating the ranking of a hand."
-    '''
     ranks = card_ranks(hand)
     if straight(ranks) and flush(hand):
         return (8, max(ranks))
@@ -108,35 +109,20 @@ def hand_rank(hand):
         return (1, kind(2, ranks), ranks)
     else:
         return (0, ranks)
-    '''
-    ''' Refactor 1 '''
-    group = group(['--23456789TJQKA'.index(str(r)) for r in hand])
-    counts, ranks = uzip(group)
-    if ranks == (14, 5, 4, 3, 2):
-        return (5, 4, 3, 2, 1)
-    straight = len(ranks) == 5 and max(ranks)-min(ranks) == 4
-    flush = len(set(s for s,r in hand)) == 1
-    return max(count_ranking[counts], 4*straight() + 5*flush()), ranks
-
-count_ranking = {(5, ):10, (1, 4):7, (3, 2):6, (3, 1, 1):3, (2, 2, 1): 2, (2, 1, 1, 1):1, (1, 1, 1, 1, 1):0}
-
-
-
-def group(items):
-
 
 
 def poker(hands):
     "Return a list of winning hands: poker([hand,...]) => [hand,...]"
+    # retList = allmax(hands, key=hand_rank)
     return allmax(hands, key=hand_rank)
 
 def allmax(iterable, key=None):
     "Return a list of all items equal to the max of the iterable."
     # Your code here.
-    print iterable
-    max_rank = max([card_ranks(item) for item in iterable], key=hand_rank)
-    print max_rank
-    return [item for item in iterable if card_ranks(item) == max_rank]
+    # print iterable
+    max_rank = max([item for item in iterable], key=hand_rank)
+    # print "max_rank:",max_rank
+    return [item for item in iterable if card_ranks(item) == card_ranks(max_rank)]
 
 
 def deal(numhands, n=5, deck=[r+s for r in '23456789TJQKA' for s in 'SHDC']):
@@ -160,15 +146,67 @@ def hand_percentages(n = 700*1000):
 
 
 
-hand_percentages()
+# Problem Set 1: Seven Card Stu
+import itertools
 
-# def test():
-#     "Test cases for the functions in poker program."
-#     sf1 = "6C 7C 8C 9C TC".split() # Straight Flush
-#     sf2 = "6D 7D 8D 9D TD".split() # Straight Flush
-#     fk = "9D 9H 9S 9C 7D".split() # Four of a Kind
-#     fh = "TD TC TH 7C 7D".split() # Full House
-#     assert poker([sf1, sf2, fk, fh]) == [sf1, sf2]
-#     return 'tests pass'
-#
-# print test()
+def best_hand(hand):
+    "From a 7-card hand, return the best 5 card hand."
+    ''' My solution
+    all_hands =[list(item) for item in itertools.combinations(hand, 5)]
+    max_rank = max([item for item in all_hands], key=hand_rank)
+    result = [item for item in all_hands if card_ranks(item) == card_ranks(max_rank)]
+    if len(result) == 1:
+        return result[0]
+    else:
+        return result
+    '''
+    ''' Peter's solution'''
+    return max(itertools.combinations(hand, 5), key=hand_rank)
+
+
+def test_best_hand():
+    print (sorted(best_hand("6C 7C 8C 9C TC 5C JS".split())))
+    assert (sorted(best_hand("6C 7C 8C 9C TC 5C JS".split()))
+            == ['6C', '7C', '8C', '9C', 'TC'])
+    assert (sorted(best_hand("TD TC TH 7C 7D 8C 8S".split()))
+            == ['8C', '8S', 'TC', 'TD', 'TH'])
+    assert (sorted(best_hand("JD TC TH 7C 7D 7S 7H".split()))
+            == ['7C', '7D', '7H', '7S', 'JD'])
+    return 'test_best_hand passes'
+
+# print test_best_hand()
+
+allranks = "23456789TJQK"
+redcards = [r+s for r in allranks for s in 'DH']
+blackcards = [r+s for r in allranks for s in 'SC']
+
+def replacements(card):
+    if card == '?B':
+        return blackcards
+    elif card == '?R':
+        return redcards
+    else:
+        return [card]
+
+def best_wild_hand(hand):
+    "Try all values for jokers in all 5-card selections."
+    # print hand
+    print map(replacements, hand)
+    print [item for item in itertools.product(*map(replacements, hand))]
+
+    hands = set(best_hand(h) for h in itertools.product(*map(replacements, hand)))
+    return max(hands, key=hand_rank)
+
+
+    # Your code here
+
+def test_best_wild_hand():
+    assert (sorted(best_wild_hand("6C 7C 8C 9C TC 5C ?B".split()))
+            == ['7C', '8C', '9C', 'JC', 'TC'])
+    # assert (sorted(best_wild_hand("TD TC 5H 5C 7C ?R ?B".split()))
+    #         == ['7C', 'TC', 'TD', 'TH', 'TS'])
+    # assert (sorted(best_wild_hand("JD TC TH 7C 7D 7S 7H".split()))
+    #         == ['7C', '7D', '7H', '7S', 'JD'])
+    # return 'test_best_wild_hand passes'
+
+print test_best_wild_hand()
