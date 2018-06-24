@@ -4,3 +4,4 @@
 This Project is just to record my work in my journey in learning CS212 in Udacity.
 
 >* 01 Poker is the first project in CS212 , taught by Peter Norvig
+>* 02 ZebraPuzzle is the second project in CS212, taught by Peter
